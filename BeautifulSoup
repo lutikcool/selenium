@@ -1,0 +1,53 @@
+import requests
+from bs4 import BeautifulSoup
+import lxml
+import time
+import csv
+
+URL='http://www.gctc.ru/main.php?id=98.1'
+
+
+def get_html():
+    session=requests.session()
+    session.headers={
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36",
+        "Accept-Language": "en-US,en;q=0.9,ru;q=0.8"
+    }
+    try:
+        res=session.get(URL)
+        res.raise_for_status()
+    except Exception as ex:
+        print(f'Error: {ex}')
+        return
+    return res.text
+
+
+html=get_html()   
+soup=BeautifulSoup(html,'lxml')
+
+
+  
+list_news=soup.select_one('div.ie_infoh')
+
+all_years= list_news.select('div[style] div')
+
+result=[]
+for year in all_years:
+    
+    if year.attrs == {'class': ['news']}:
+        years=year.select('h2')
+        year_str=''
+        for y in years:
+            year_str+=f'{y.text}'
+                
+        days=year.find_previous('h1')
+        days_str=''
+        month_str=''
+        for d in days:
+            days_str+=f'{d.text[:2]}'
+            month_str+=f'{d.text[2:]}'
+        date=f'{days_str} {month_str} {year_str}'
+        result.append(date)   
+    else:
+      break
+result
