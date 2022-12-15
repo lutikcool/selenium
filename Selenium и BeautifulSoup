@@ -1,0 +1,58 @@
+//Написать код, который выполнит ввод слова "Lenovo" в поисковую строку сайта 1000kem.ru (https://1000kem.ru/contacts/) и выполнить поиск
+
+
+!pip install selenium
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+
+service = Service(executable_path='/usr/lib/chromium-browser/chromedriver')
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument("--headless")
+chrome_options.add_argument("--no-sandbox")
+driver = webdriver.Chrome(service=service, options=chrome_options)
+
+try:
+    driver.get("https://www.nbcomputers.ru/")
+    driver.implicitly_wait(10)
+
+    action=ActionChains(driver)
+    action.move_to_element(driver.find_element(By.CSS_SELECTOR,'input.ant-input')).click().send_keys('Lenovo').perform()
+
+
+
+except Exception as ex:
+    print(f'Error: {ex}')
+
+html=driver.page_source
+driver.quit()
+
+
+
+// Написать код, который выполнит ввод слова "Lenovo" в поисковую строку сайта nbcomputers.ru (https://www.nbcomputers.ru/) и нажмет кнопку "Найти"
+
+service = Service(executable_path='/usr/lib/chromium-browser/chromedriver')
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument("--headless")
+chrome_options.add_argument("--no-sandbox")
+driver = webdriver.Chrome(service=service, options=chrome_options)
+
+try:
+    driver.get("https://www.nbcomputers.ru/")
+    driver.implicitly_wait(10)
+
+    action=ActionChains(driver)
+    action.move_to_element(driver.find_element(By.CSS_SELECTOR,'input.ant-input')).click().send_keys('Lenovo').perform()
+ 
+    action.move_to_element(driver.find_element(By.CSS_SELECTOR,'div.Headerstyles__Header__InnerCenter-sc-l0hopz-3.eTELbW.ant-col-xs-0.ant-col-lg-10 div.gcLlhG span.ant-input-affix-wrapper span.ant-input-suffix button')).click().perform()
+    
+    
+except Exception as ex:
+    print(f'Error: {ex}')
+
+html=driver.page_source
+driver.quit()
