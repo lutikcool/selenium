@@ -1,0 +1,130 @@
+URL2='https://tomsk.richfamily.ru/catalog/igrushki/myagkie/'
+
+session2=requests.session()
+session2.headers={
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36",
+    "accept-language": "en-US,en;q=0.9,ru;q=0.8"
+}
+
+try:
+    res=session2.get(URL2)
+    res.raise_for_status()
+    html=res.text
+
+except Exception as ex:
+    print(f'Error: {ex}')
+    
+
+
+
+soup=BeautifulSoup(html,'lxml')
+igrushka=soup.select_one('div.kkb_content-item')
+
+
+names=igrushka.select_one('div.kkb_content-item__name-brand')
+name=names.text.replace('\t', '').replace('\n', ' ').strip()[:-6].strip()
+
+
+prices=igrushka.select_one('div.kkb_content-item__price-box')
+price=prices.text.replace('\t', '').replace('\n', ' ').strip()[5:-1].strip()
+
+razmers=igrushka.select_one('div.kkb_content-item__name-brand')
+razmer_name=razmers.text.replace('\t', '').replace('\n', ' ').strip()[:-6].strip()
+x=razmer_name.find('см')
+razmer=razmer_name[x-3:x+3].replace('-', '').strip()
+
+igrushka_info={
+    "name":name,
+    "price":price,
+    "razmer":razmer
+}
+
+
+
+igrushki=soup.select('div.kkb_content-item')
+
+igrushki_res=[]
+for i in igrushki:
+    names=i.select_one('div.kkb_content-item__name-brand')
+    name=names.text.replace('\t', '').replace('\n', ' ').strip()[:-6].strip()
+   
+
+    prices=i.select_one('div.kkb_content-item__price-box')
+    price=prices.text.replace('\t', '').replace('\n', ' ').strip()[5:-1].strip()
+    
+
+    razmers=i.select_one('div.kkb_content-item__name-brand')
+    razmer_name=razmers.text.replace('\t', '').replace('\n', ' ').strip()[:-6].strip()
+    x=razmer_name.find('см')
+    razmer=razmer_name[x-4:x+3].replace('-', '').strip()
+  
+
+    igrushka_info={
+        "name":name,
+        "price":price,
+        "razmer":razmer
+    }
+    igrushki_res.append(igrushka_info)
+    
+import csv
+
+
+# https://tomsk.richfamily.ru/catalog/igrushki/myagkie/?PAGEN_1=2
+URL3='https://tomsk.richfamily.ru/catalog/igrushki/myagkie/?PAGEN_1={}.html'
+
+session=requests.session()
+session.headers={
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36",
+    "accept-language": "en-US,en;q=0.9,ru;q=0.8"
+}
+
+try:
+  
+    final_res=[]
+    final_res += igrushki_res
+    
+    for page in range(2,17):
+        res=session.get(URL3.format(page))
+        res.raise_for_status()
+        html=res.text
+
+        soup=BeautifulSoup(html,'lxml')
+
+        igrushki=soup.select('div.kkb_content-item')
+
+        igrushki_res_all=[]
+        for i in igrushki:
+            names=i.select_one('div.kkb_content-item__name-brand')
+            name=names.text.replace('\t', '').replace('\n', ' ').strip()[:-6].strip()
+          
+
+            prices=i.select_one('div.kkb_content-item__price-box')
+            price=prices.text.replace('\t', '').replace('\n', ' ').strip()[5:-1].strip()
+            
+
+            razmers=i.select_one('div.kkb_content-item__name-brand')
+            razmer_name=razmers.text.replace('\t', '').replace('\n', ' ').strip()[:-6].strip()
+            x=razmer_name.find('см')
+            razmer=razmer_name[x-4:x+3].replace('-', '').strip()
+          
+
+            igrushka_info={
+                "name":name,
+                "price":price,
+                "razmer":razmer
+            }
+            igrushki_res_all.append(igrushka_info)
+        final_res += igrushki_res_all
+    
+        
+
+    with open("igrushki.csv",'w') as f:
+        writer=csv.DictWriter(f,final_res[0].keys())
+        writer.writeheader()
+        for r in final_res:
+            writer.writerow(r)
+
+except Exception as ex:
+    print(f'Error: {ex}')
+
+
